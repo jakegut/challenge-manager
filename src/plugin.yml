@@ -1,0 +1,27 @@
+author: Borgdude
+description: "Another first plugin"
+main: com.borgdude.challenge.Main
+name: First_Plugin
+version: "0.0.1"
+
+commands:
+  freeze:
+    description: Freezes all or given players
+    usage: /<command> [players|all]
+  unfreeze:
+    description: Unfreezes all or given players
+    usage: /<command> [players|all]
+  challenge:
+    description: Challenge Manager commands
+    usage: /<command> [option]
+
+permissions:
+  challenges.freeze:
+    description: Use the /freeze command
+    default: op
+  challenges.unfreeze:
+    description: Use the /unfreeze command
+    default: op
+  challenges.admin:
+    description: Use the challenges admin commands
+    default: op
