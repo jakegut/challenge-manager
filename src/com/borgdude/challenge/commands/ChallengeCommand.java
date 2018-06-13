@@ -33,7 +33,7 @@ public class ChallengeCommand implements CommandExecutor {
             Player player = (Player) sender;
 
             if(args.length == 0){
-                player.sendMessage(ChatColor.GREEN + "Available commands for: " +ChatColor.BOLD + ChatColor.AQUA +
+                player.sendMessage(ChatColor.GREEN + "Available commands for: " + ChatColor.BOLD + ChatColor.AQUA +
                         "Challenges");
                 if(player.hasPermission("challenges.admin")){
                     player.sendMessage(ChatColor.GREEN + "/challenge create <title> " + ChatColor.RESET +
@@ -149,6 +149,71 @@ public class ChallengeCommand implements CommandExecutor {
                             ChatColor.GREEN + " to " + ChatColor.AQUA + cs.getTitle() + ChatColor.GREEN +
                             " with index: " + ChatColor.AQUA + cs.getChallengeIndex(ch));
                     return true;
+                } else if (args[0].equalsIgnoreCase("set")){
+
+                    if(args[1].equalsIgnoreCase("list")){
+                        HashMap<Player, ChallengeSet> challengeSets = this.challengeManager.getAssignedChallengeSets();
+                        if(challengeSets.isEmpty()){
+                            player.sendMessage(ChatColor.RED + "No challenges have been assigned yet!");
+                            return true;
+                        }
+
+                        for(Player challenger : challengeSets.keySet()){
+                            player.sendMessage(ChatColor.AQUA + challenger.getName() + ChatColor.BLUE + " : " +
+                                    challengeSets.get(challenger).getTitle());
+                        }
+                        return true;
+                    }
+
+                    ChallengeSet cs = this.challengeManager.getChallengeSet(args[1]);
+                    if(cs == null){
+                        player.sendMessage(ChatColor.RED + "The challenge set: " + ChatColor.GOLD + args[1] +
+                        ChatColor.RED + " doesn't exist.");
+                        return true;
+                    }
+
+                    if(cs.getChallenges().isEmpty()){
+                        player.sendMessage(ChatColor.RED + "The Challenge set " + ChatColor.GOLD + cs.getTitle() +
+                                ChatColor.RED + " has no challenges. Use: /challenge add <desc> to add one.");
+                        return true;
+                    }
+
+                    if(!(args[2].equalsIgnoreCase("player")) || args.length < 4){
+                        player.sendMessage(ChatColor.RED + "Usage: /challenge set <ChallengeSet> player <players>");
+                        return true;
+                    }
+
+                    for(int i = 3; i < args.length; i++){
+                        Player challenger = plugin.getServer().getPlayer(args[i]);
+                        if(challenger == null){
+                            player.sendMessage(ChatColor.RED + "Player " + ChatColor.GOLD + args[i] +
+                                    ChatColor.RED + " not found");
+                            continue;
+                        }
+
+
+                        int status = this.challengeManager.addPlayerToSet(challenger, cs);
+
+                        if(status == -1){ // -1: Challenge already set to that player
+                            player.sendMessage(ChatColor.RED + "Player " + ChatColor.GOLD + args[i] +
+                                    ChatColor.RED + " already added to the set.");
+                        } else if(status == 2){
+                            challenger.sendMessage(ChatColor.GREEN + "You have been changed to the challenge set: " +
+                                    ChatColor.AQUA + cs.getTitle());
+                            player.sendMessage(ChatColor.GREEN + "Player " + ChatColor.AQUA + args[i] + ChatColor.GREEN +
+                                    " changed to the challenge set: " + ChatColor.AQUA + cs.getTitle());
+                        } else if(status == 1){
+                            challenger.sendMessage(ChatColor.GREEN + "You have been added to the challenge set: " +
+                                    ChatColor.AQUA + cs.getTitle());
+                            player.sendMessage(ChatColor.GREEN + "Player " + ChatColor.AQUA + args[i] + ChatColor.GREEN +
+                                    " added to the challenge set: " + ChatColor.AQUA + cs.getTitle());
+                        }
+
+
+                    }
+
+                    return true;
+
                 }
             }
 
