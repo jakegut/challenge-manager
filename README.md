@@ -18,8 +18,9 @@ So...a ChallengeSet has mutliple Challenges.
 5. List challenges in a set: `/challenge list <set title here>`
 6. Edit the title of a set:: `/challenge change title <new title here>`
 7. Edit the descrption of a challenge: `/challenge change <number> <description>`
-7a. Use `/challenge list <set title here>` and descide which challenge to use by the number on the side
+(Use `/challenge list <set title here>` and decide which challenge to change by the number on the side)
 8. Change the Challenge Set you're editing: `/challenge edit <title>`
+9. Set player(s) to use a Challenge Set: `/challenge set <ChallengeSet> player <players>`
 
 
 ## Permissions
