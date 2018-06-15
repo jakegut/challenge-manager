@@ -4,9 +4,10 @@ Spigot 1.12.2 Plugin that allows admins to easily edit Challenges and freeze/unf
 
 ## ChallengeSets and Challenges
 The ChallengeManager has an ArrayList of ChallengeSets.
-An instance of a ChallengeSet has a title, a UUID, and an ArrayList of Challenges.
-An instance of a Challenge has a description and a UUID.
 
+An instance of a ChallengeSet has a title, a UUID, and an ArrayList of Challenges.
+
+An instance of a Challenge has a description and a UUID.
 So...a ChallengeSet has mutliple Challenges.
 
 ## Using the Challenge Manager

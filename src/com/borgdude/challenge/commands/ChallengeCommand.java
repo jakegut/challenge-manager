@@ -4,14 +4,20 @@ import com.borgdude.challenge.Main;
 import com.borgdude.challenge.managers.ChallengeManager;
 import com.borgdude.challenge.objects.Challenge;
 import com.borgdude.challenge.objects.ChallengeSet;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Color;
+import org.bukkit.FireworkEffect;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.meta.FireworkMeta;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.UUID;
 
 public class ChallengeCommand implements CommandExecutor {
 
@@ -64,7 +70,7 @@ public class ChallengeCommand implements CommandExecutor {
                         return true;
                     }
 
-                    ChallengeSet cs = challengeManager.getChallengeSet(args[1]);
+                    ChallengeSet cs = challengeManager.getChallengeSetByString(args[1]);
                     if(cs != null){
                         setCurrentlyEditing(player, cs);
                     } else {
@@ -151,6 +157,11 @@ public class ChallengeCommand implements CommandExecutor {
                     return true;
                 } else if (args[0].equalsIgnoreCase("set")){
 
+                    if(args.length < 1){
+                        player.sendMessage(ChatColor.RED + "Usage: /challenge set <ChallengeSet|list> player <players>");
+                        return true;
+                    }
+
                     if(args[1].equalsIgnoreCase("list")){
                         HashMap<Player, ChallengeSet> challengeSets = this.challengeManager.getAssignedChallengeSets();
                         if(challengeSets.isEmpty()){
@@ -165,7 +176,7 @@ public class ChallengeCommand implements CommandExecutor {
                         return true;
                     }
 
-                    ChallengeSet cs = this.challengeManager.getChallengeSet(args[1]);
+                    ChallengeSet cs = this.challengeManager.getChallengeSetByString(args[1]);
                     if(cs == null){
                         player.sendMessage(ChatColor.RED + "The challenge set: " + ChatColor.GOLD + args[1] +
                         ChatColor.RED + " doesn't exist.");
@@ -178,13 +189,14 @@ public class ChallengeCommand implements CommandExecutor {
                         return true;
                     }
 
-                    if(!(args[2].equalsIgnoreCase("player")) || args.length < 4){
+                    if(args.length < 4 || !(args[2].equalsIgnoreCase("player"))){
                         player.sendMessage(ChatColor.RED + "Usage: /challenge set <ChallengeSet> player <players>");
                         return true;
                     }
 
                     for(int i = 3; i < args.length; i++){
                         Player challenger = plugin.getServer().getPlayer(args[i]);
+
                         if(challenger == null){
                             player.sendMessage(ChatColor.RED + "Player " + ChatColor.GOLD + args[i] +
                                     ChatColor.RED + " not found");
@@ -214,13 +226,62 @@ public class ChallengeCommand implements CommandExecutor {
 
                     return true;
 
+                } else if (args[0].equalsIgnoreCase("complete")){
+                    if(args.length < 1){
+                        player.sendMessage(ChatColor.RED + "Usage: /challenge complete <player(s)>");
+                        return true;
+                    }
+
+                    for(int i = 1; i < args.length; i++){
+                        Player challenger = Bukkit.getPlayer(args[i]);
+
+                        if(challenger == null){
+                            player.sendMessage(ChatColor.RED + "Player " + ChatColor.GOLD + args[i] +
+                                    ChatColor.RED + " not found");
+                            continue;
+                        }
+
+                        int status = this.challengeManager.completedChallenge(challenger);
+
+                        if(status == -2){
+                            player.sendMessage(ChatColor.RED + "Something went terribly wrong.");
+                        } else if (status == -1){
+                            player.sendMessage(ChatColor.RED + "Player " + ChatColor.GOLD + args[i] +
+                                    ChatColor.RED + " has not been assigned a challenge set.");
+                        } else if (status == 1 || status == 2) {
+
+                            Challenge ch = this.challengeManager.getCompletedChallenges().get(challenger);
+                            UUID csUUID = ch.getCsUUID();
+                            ChallengeSet cs = this.challengeManager.getChallengeSetById(csUUID);
+                            int num = cs.getChallengeIndex(ch);
+
+                            Bukkit.getServer().broadcastMessage(ChatColor.AQUA + challenger.getName() + ChatColor.GREEN +
+                                    " has successfully completed challenge "  + ChatColor.AQUA + num +
+                                    ChatColor.GREEN + " in " + ChatColor.AQUA + cs.getTitle());
+                            launchFirework(challenger);
+
+                        } else if (status == 3) {
+
+                            Challenge ch = this.challengeManager.getCompletedChallenges().get(challenger);
+                            UUID csUUID = ch.getCsUUID();
+                            ChallengeSet cs = this.challengeManager.getChallengeSetById(csUUID);
+
+                            Bukkit.getServer().broadcastMessage(ChatColor.AQUA + challenger.getName() + ChatColor.GREEN +
+                                    " has successfully completed all the challenges for " + ChatColor.AQUA + cs.getTitle());
+                            launchFirework(challenger);
+
+                            this.challengeManager.removePlayer(challenger);
+                        }
+                    }
+
+                    return true;
                 }
             }
 
             if(args[0].equalsIgnoreCase("list")){
                 if(args.length > 1) {
-                    ChallengeSet cs = this.challengeManager.getChallengeSet(args[1]);
-                    if (this.challengeManager.getChallengeSet(args[1]) == null) {
+                    ChallengeSet cs = this.challengeManager.getChallengeSetByString(args[1]);
+                    if (this.challengeManager.getChallengeSetByString(args[1]) == null) {
                         player.sendMessage(ChatColor.RED + "Couldn't find challenge set named: " + ChatColor.GOLD +
                         args[1]);
                         return true;
@@ -257,6 +318,21 @@ public class ChallengeCommand implements CommandExecutor {
                     }
                     return true;
                 }
+            } else if (args[0].equalsIgnoreCase("current")){
+                Challenge currentChallenge = this.challengeManager.getCurrentChallenge(player);
+
+                if(currentChallenge == null){
+                    player.sendMessage(ChatColor.RED + "You're not in a challenge set!");
+                    return true;
+                }
+
+                UUID csUUID = currentChallenge.getCsUUID();
+                ChallengeSet cs = this.challengeManager.getChallengeSetById(csUUID);
+                int num = cs.getChallengeIndex(currentChallenge);
+
+                player.sendMessage(ChatColor.BLUE + "Current challenge: " + ChatColor.AQUA + num + ". " +
+                        currentChallenge.getDescription());
+
             }
         }
         return false;
@@ -269,5 +345,19 @@ public class ChallengeCommand implements CommandExecutor {
             currentlyEditing.put(player, cs);
 
         player.sendMessage(ChatColor.GREEN + "Now currently editing the Challenge Set: " + ChatColor.BLUE + cs.getTitle());
+    }
+
+    public void launchFirework(Player player){
+        Firework f = player.getWorld().spawn(player.getLocation(), Firework.class);
+        FireworkMeta fm = f.getFireworkMeta();
+        fm.addEffect(FireworkEffect.builder()
+                .flicker(false)
+                .trail(true)
+                .with(FireworkEffect.Type.STAR)
+                .withColor(Color.AQUA)
+                .withFade(Color.BLUE)
+                .build());
+        fm.setPower(2);
+        f.setFireworkMeta(fm);
     }
 }

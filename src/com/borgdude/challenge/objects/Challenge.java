@@ -23,9 +23,21 @@ public class Challenge {
     private String description;
     private UUID uuid;
 
-    public Challenge(String desc, UUID uuid){
+
+    public UUID getCsUUID() {
+        return csUUID;
+    }
+
+    public void setCsUUID(UUID csUUID) {
+        this.csUUID = csUUID;
+    }
+
+    private UUID csUUID;
+
+    public Challenge(String desc, UUID uuid, UUID csUUID){
         this.description = desc;
         this.uuid = uuid;
+        this.csUUID = csUUID;
     }
 
 }

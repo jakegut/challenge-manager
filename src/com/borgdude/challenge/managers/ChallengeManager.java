@@ -2,6 +2,7 @@ package com.borgdude.challenge.managers;
 
 import com.borgdude.challenge.objects.Challenge;
 import com.borgdude.challenge.objects.ChallengeSet;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
@@ -21,6 +22,66 @@ public class ChallengeManager {
     }
 
     private HashMap<Player, ChallengeSet> assignedChallengeSets;
+
+    public void removePlayer(Player player){
+        if(this.getAssignedChallengeSets().containsKey(player)){
+            Bukkit.getConsoleSender().sendMessage(player.getName() + " has been removed from their set.");
+            this.getAssignedChallengeSets().remove(player);
+        }
+
+        if(this.getCompletedChallenges().containsKey(player)){
+            this.getCompletedChallenges().remove(player);
+        }
+
+    }
+
+    public int completedChallenge(Player player){
+        if(this.completedChallenges.containsKey(player)){
+            Challenge currentChallenge = this.completedChallenges.get(player);
+            ChallengeSet cs = this.getChallengeSetById(currentChallenge.getCsUUID());
+            if(cs.getChallenges().contains(currentChallenge)){
+                int index = cs.getChallengeIndex(currentChallenge);
+                if((index + 1) == cs.getChallenges().size()){
+                    return 3; // Completed all challenges in set
+                }
+                this.completedChallenges.replace(player, cs.getChallenges().get(index));
+                return 1; //Successfully completed next challenge
+            } else{
+                return -2; //How tf did this happen
+            }
+        } else {
+            if(!this.assignedChallengeSets.containsKey(player))
+                return -1;
+
+            Challenge ch = this.assignedChallengeSets.get(player).getChallenges().get(0);
+
+            this.completedChallenges.put(player, ch);
+            return 2; //Successfully completed first challenge in set
+        }
+    }
+
+    public Challenge getCurrentChallenge(Player player){
+        if(this.completedChallenges.containsKey(player)){
+            Challenge ch = this.getCompletedChallenges().get(player);
+            UUID csUUID = ch.getCsUUID();
+            ChallengeSet cs = this.getChallengeSetById(csUUID);
+            int num = cs.getChallengeIndex(ch);
+            return cs.getChallenges().get(num);
+        }
+        else if(this.assignedChallengeSets.containsKey(player))
+            return this.assignedChallengeSets.get(player).getChallenges().get(0);
+        else
+            return null;
+    }
+
+    public HashMap<Player, Challenge> getCompletedChallenges() {
+        return completedChallenges;
+    }
+
+    public void setCompletedChallenges(HashMap<Player, Challenge> completedChallenges) {
+        this.completedChallenges = completedChallenges;
+    }
+
     private HashMap<Player, Challenge> completedChallenges;
 
     public ChallengeManager(ArrayList<ChallengeSet> challengeSet){
@@ -39,11 +100,19 @@ public class ChallengeManager {
         return cs;
     }
 
-    public ChallengeSet getChallengeSet(String title){
+    public ChallengeSet getChallengeSetByString(String title){
        for(ChallengeSet cs : challengeSet){
            if(cs.getTitle().equalsIgnoreCase(title))
                return cs;
        }
+        return null;
+    }
+
+    public ChallengeSet getChallengeSetById(UUID uuid){
+        for(ChallengeSet cs : challengeSet){
+            if(cs.getUuid().equals(uuid))
+                return cs;
+        }
         return null;
     }
 

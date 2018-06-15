@@ -16,7 +16,7 @@ public class ChallengeSet {
     }
 
     public Challenge createChallenge(String description){
-        Challenge ch = new Challenge(description, UUID.randomUUID());
+        Challenge ch = new Challenge(description, UUID.randomUUID(), this.getUuid());
         this.challenges.add(ch);
         return ch;
     }

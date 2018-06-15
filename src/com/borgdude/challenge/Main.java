@@ -3,6 +3,7 @@ package com.borgdude.challenge;
 
 import com.borgdude.challenge.commands.ChallengeCommand;
 import com.borgdude.challenge.commands.FreezeCommand;
+import com.borgdude.challenge.commands.OnTabComplete;
 import com.borgdude.challenge.commands.UnfreezeCommand;
 import com.borgdude.challenge.events.EventClass;
 import com.borgdude.challenge.managers.ChallengeManager;
@@ -35,7 +36,7 @@ public class Main extends JavaPlugin {
                     UUID chUUID = UUID.fromString(chID);
                     String desc = getConfig().getString("challenges." + csID + "." + chID + ".description");
                     int index = getConfig().getInt("challenges." + csID + "." + chID + ".index");
-                    challenges.add(index - 1, new Challenge(desc, chUUID));
+                    challenges.add(index - 1, new Challenge(desc, chUUID, uuid));
                 } catch (IllegalArgumentException exception){
                     continue;
                 }
@@ -46,6 +47,7 @@ public class Main extends JavaPlugin {
         getCommand("freeze").setExecutor(new FreezeCommand());
         getCommand("unfreeze").setExecutor(new UnfreezeCommand());
         getCommand("challenge").setExecutor(new ChallengeCommand());
+        getCommand("challenge").setTabCompleter(new OnTabComplete());
         getServer().getConsoleSender().sendMessage(ChatColor.GREEN + "Tutorial has been enabled");
         getServer().getPluginManager().registerEvents(new EventClass(), this);
         getConfig().options().copyDefaults(true);
