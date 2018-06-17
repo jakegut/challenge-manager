@@ -1,6 +1,8 @@
 package com.borgdude.challenge.commands;
 
 import com.borgdude.challenge.Main;
+import com.borgdude.challenge.events.*;
+import com.borgdude.challenge.managers.ChallengeBookManager;
 import com.borgdude.challenge.managers.ChallengeManager;
 import com.borgdude.challenge.objects.Challenge;
 import com.borgdude.challenge.objects.ChallengeSet;
@@ -22,6 +24,7 @@ import java.util.UUID;
 public class ChallengeCommand implements CommandExecutor {
 
     private ChallengeManager challengeManager = Main.challengeManager;
+    private ChallengeBookManager challengeBookManager = Main.challengeBookManager;
     private Main plugin = Main.plugin;
     private HashMap<Player, ChallengeSet> currentlyEditing;
 
@@ -90,10 +93,22 @@ public class ChallengeCommand implements CommandExecutor {
                             return true;
                         }
 
-                        String previousTitle = this.currentlyEditing.get(player).getTitle();
+                        ChallengeSet previousSet = this.currentlyEditing.get(player);
+                        String previousTitle = previousSet.getTitle();
+
+                        ChallengeSet newSet = previousSet;
+                        newSet.setTitle(title);
+
+                        int idx = this.challengeManager.getChallenges().indexOf(previousSet);
+                        this.challengeManager.getChallenges().set(idx, newSet);
+
                         this.currentlyEditing.get(player).setTitle(title);
                         player.sendMessage(ChatColor.GREEN + "Changed challenge named: " + ChatColor.BLUE +
                                 previousTitle + ChatColor.GREEN + " to: " + ChatColor.BLUE + title);
+
+                        ChallengeSetEditEvent challengeSetEditEvent = new ChallengeSetEditEvent(previousSet, newSet);
+                        Bukkit.getPluginManager().callEvent(challengeSetEditEvent);
+
                         return true;
                     } else {
                         try{
@@ -113,13 +128,23 @@ public class ChallengeCommand implements CommandExecutor {
                                 desc += args[i];
                             }
 
-                            String previousDesc = this.currentlyEditing.get(player).getChallenges().get(index - 1)
-                                    .getDescription();
-                            this.currentlyEditing.get(player).getChallenges().get(index - 1).setDescription(desc);
+                            Challenge previousChallenge = this.currentlyEditing.get(player).getChallenges()
+                                    .get(index - 1);
+                            String previousDesc = previousChallenge.getDescription();
+
+                            Challenge newChallenge = previousChallenge;
+                            newChallenge.setDescription(desc);
+
+                            int idx = this.currentlyEditing.get(player).getChallengeIndex(previousChallenge);
+
+                            this.currentlyEditing.get(player).getChallenges().set(idx - 1, newChallenge);
 
                             player.sendMessage(ChatColor.GREEN + "Changed challenge number " + ChatColor.AQUA +
                                     String.valueOf(index) + ChatColor.GREEN +  " from " + ChatColor.AQUA + previousDesc
                                     + " " + ChatColor.GREEN +  " to " + ChatColor.AQUA + desc);
+
+                            ChallengeEditEvent challengeEditEvent = new ChallengeEditEvent(previousChallenge, newChallenge);
+                            Bukkit.getPluginManager().callEvent(challengeEditEvent);
 
                         } catch (IllegalArgumentException exception){
                             return true;
@@ -140,6 +165,13 @@ public class ChallengeCommand implements CommandExecutor {
                         return true;
                     }
 
+                    if(args[1].equals("")){
+                        player.sendMessage(ChatColor.RED +
+                                "Usage: /challenge add <description of challenge> (Adds a challenge to: " +
+                                ChatColor.AQUA + this.currentlyEditing.get(player).toString());
+                        return true;
+                    }
+
                     String desc = "";
 
                     for(int i = 1; i < args.length; i++){
@@ -154,6 +186,10 @@ public class ChallengeCommand implements CommandExecutor {
                     player.sendMessage(ChatColor.GREEN + "Added Challenge: " + ChatColor.AQUA + desc +
                             ChatColor.GREEN + " to " + ChatColor.AQUA + cs.getTitle() + ChatColor.GREEN +
                             " with index: " + ChatColor.AQUA + cs.getChallengeIndex(ch));
+
+                    ChallengeAddedEvent challengeAddedEvent = new ChallengeAddedEvent(ch);
+                    Bukkit.getPluginManager().callEvent(challengeAddedEvent);
+
                     return true;
                 } else if (args[0].equalsIgnoreCase("set")){
 
@@ -204,6 +240,8 @@ public class ChallengeCommand implements CommandExecutor {
                         }
 
 
+
+
                         int status = this.challengeManager.addPlayerToSet(challenger, cs);
 
                         if(status == -1){ // -1: Challenge already set to that player
@@ -214,11 +252,15 @@ public class ChallengeCommand implements CommandExecutor {
                                     ChatColor.AQUA + cs.getTitle());
                             player.sendMessage(ChatColor.GREEN + "Player " + ChatColor.AQUA + args[i] + ChatColor.GREEN +
                                     " changed to the challenge set: " + ChatColor.AQUA + cs.getTitle());
+                            AssignedPlayerEvent assignedPlayerEvent = new AssignedPlayerEvent(challenger);
+                            Bukkit.getPluginManager().callEvent(assignedPlayerEvent);
                         } else if(status == 1){
                             challenger.sendMessage(ChatColor.GREEN + "You have been added to the challenge set: " +
                                     ChatColor.AQUA + cs.getTitle());
                             player.sendMessage(ChatColor.GREEN + "Player " + ChatColor.AQUA + args[i] + ChatColor.GREEN +
                                     " added to the challenge set: " + ChatColor.AQUA + cs.getTitle());
+                            AssignedPlayerEvent assignedPlayerEvent = new AssignedPlayerEvent(challenger);
+                            Bukkit.getPluginManager().callEvent(assignedPlayerEvent);
                         }
 
 
@@ -258,6 +300,7 @@ public class ChallengeCommand implements CommandExecutor {
                             Bukkit.getServer().broadcastMessage(ChatColor.AQUA + challenger.getName() + ChatColor.GREEN +
                                     " has successfully completed challenge "  + ChatColor.AQUA + num +
                                     ChatColor.GREEN + " in " + ChatColor.AQUA + cs.getTitle());
+
                             launchFirework(challenger);
 
                         } else if (status == 3) {
@@ -332,6 +375,19 @@ public class ChallengeCommand implements CommandExecutor {
 
                 player.sendMessage(ChatColor.BLUE + "Current challenge: " + ChatColor.AQUA + num + ". " +
                         currentChallenge.getDescription());
+
+            } else if(args[0].equalsIgnoreCase("completed")){
+
+                ChallengeSet currentChallengeSet = this.challengeManager.getAssignedChallengeSets().get(player);
+
+                if(currentChallengeSet == null){
+                    player.sendMessage(ChatColor.RED + "You're not assigned to a challenge set.");
+                    return true;
+                }
+
+                this.challengeBookManager.addPlayer(player);
+                return true;
+
 
             }
         }

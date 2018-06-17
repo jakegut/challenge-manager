@@ -6,6 +6,7 @@ import com.borgdude.challenge.commands.FreezeCommand;
 import com.borgdude.challenge.commands.OnTabComplete;
 import com.borgdude.challenge.commands.UnfreezeCommand;
 import com.borgdude.challenge.events.EventClass;
+import com.borgdude.challenge.managers.ChallengeBookManager;
 import com.borgdude.challenge.managers.ChallengeManager;
 import com.borgdude.challenge.managers.FreezeManager;
 import com.borgdude.challenge.objects.Challenge;
@@ -20,12 +21,14 @@ public class Main extends JavaPlugin {
 
     public static FreezeManager freezeManager;
     public static ChallengeManager challengeManager;
+    public static ChallengeBookManager challengeBookManager;
     public static Main plugin;
 
     @Override
     public void onEnable(){
         plugin = this;
         freezeManager = new FreezeManager();
+        challengeBookManager = new ChallengeBookManager();
         ArrayList<ChallengeSet> challengeSets = new ArrayList<>();
         for(String csID : getConfig().getConfigurationSection("challenges").getKeys(false)){
             UUID uuid = UUID.fromString(csID);
@@ -48,7 +51,7 @@ public class Main extends JavaPlugin {
         getCommand("unfreeze").setExecutor(new UnfreezeCommand());
         getCommand("challenge").setExecutor(new ChallengeCommand());
         getCommand("challenge").setTabCompleter(new OnTabComplete());
-        getServer().getConsoleSender().sendMessage(ChatColor.GREEN + "Tutorial has been enabled");
+        getServer().getConsoleSender().sendMessage(ChatColor.GREEN + "Challenges has been enabled");
         getServer().getPluginManager().registerEvents(new EventClass(), this);
         getConfig().options().copyDefaults(true);
         saveConfig();
@@ -68,6 +71,6 @@ public class Main extends JavaPlugin {
             }
         }
         saveConfig();
-        getServer().getConsoleSender().sendMessage(ChatColor.RED + "Tutorial has been disabled");
+        getServer().getConsoleSender().sendMessage(ChatColor.RED + "Challenges has been disabled");
     }
 }

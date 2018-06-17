@@ -1,15 +1,25 @@
 package com.borgdude.challenge.managers;
 
+import com.borgdude.challenge.events.ChallengeCompletedEvent;
+import com.borgdude.challenge.events.ChallengeSetCompletedEvent;
 import com.borgdude.challenge.objects.Challenge;
 import com.borgdude.challenge.objects.ChallengeSet;
+import net.minecraft.server.v1_12_R1.IChatBaseComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
 public class ChallengeManager {
+
+    public ChallengeManager(ArrayList<ChallengeSet> challengeSet){
+        this.challengeSet = challengeSet;
+        this.assignedChallengeSets = new HashMap<>();
+        this.completedChallenges = new HashMap<>();
+    }
 
     private ArrayList<ChallengeSet> challengeSet;
 
@@ -42,9 +52,15 @@ public class ChallengeManager {
             if(cs.getChallenges().contains(currentChallenge)){
                 int index = cs.getChallengeIndex(currentChallenge);
                 if((index + 1) == cs.getChallenges().size()){
+                    //ChallengeCompletedEvent challengeCompletedEvent = new ChallengeCompletedEvent(player, cs.getChallenges().get(index));
+                    ChallengeSetCompletedEvent challengeSetCompletedEvent = new ChallengeSetCompletedEvent(cs, player);
+                    Bukkit.getPluginManager().callEvent(challengeSetCompletedEvent);
+                    //Bukkit.getPluginManager().callEvent(challengeCompletedEvent);
                     return 3; // Completed all challenges in set
                 }
                 this.completedChallenges.replace(player, cs.getChallenges().get(index));
+                ChallengeCompletedEvent challengeCompletedEvent = new ChallengeCompletedEvent(player, cs.getChallenges().get(index));
+                Bukkit.getPluginManager().callEvent(challengeCompletedEvent);
                 return 1; //Successfully completed next challenge
             } else{
                 return -2; //How tf did this happen
@@ -56,6 +72,10 @@ public class ChallengeManager {
             Challenge ch = this.assignedChallengeSets.get(player).getChallenges().get(0);
 
             this.completedChallenges.put(player, ch);
+
+            ChallengeCompletedEvent challengeCompletedEvent = new ChallengeCompletedEvent(player, ch);
+            Bukkit.getPluginManager().callEvent(challengeCompletedEvent);
+
             return 2; //Successfully completed first challenge in set
         }
     }
@@ -83,12 +103,6 @@ public class ChallengeManager {
     }
 
     private HashMap<Player, Challenge> completedChallenges;
-
-    public ChallengeManager(ArrayList<ChallengeSet> challengeSet){
-        this.challengeSet = challengeSet;
-        this.assignedChallengeSets = new HashMap<>();
-        this.completedChallenges = new HashMap<>();
-    }
 
     public ArrayList<ChallengeSet> getChallenges(){
         return this.challengeSet;
@@ -128,7 +142,6 @@ public class ChallengeManager {
 
         this.assignedChallengeSets.put(player, cs);
         return 1;
-
-
     }
+
 }
