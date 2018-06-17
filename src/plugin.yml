@@ -2,7 +2,7 @@ author: Borgdude
 description: "Another first plugin"
 main: com.borgdude.challenge.Main
 name: First_Plugin
-version: "0.0.1"
+version: "0.1.0"
 
 commands:
   freeze:
