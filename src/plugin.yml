@@ -1,7 +1,7 @@
 author: Borgdude
 description: "Another first plugin"
 main: com.borgdude.challenge.Main
-name: First_Plugin
+name: Challenge_Manager
 version: "0.1.0"
 
 commands:
