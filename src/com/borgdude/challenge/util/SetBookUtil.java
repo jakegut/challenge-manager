@@ -77,6 +77,7 @@ public class SetBookUtil {
         ChallengeSet cs = challengeManager.getChallengeSetById(challenge.getCsUUID());
         removeSetBook(player, cs);
         player.getInventory().addItem(newBook);
+        player.sendMessage("Your challenge set book has been updated!");
     }
 
     public static void removeSetBook(Player player, ChallengeSet cs){
