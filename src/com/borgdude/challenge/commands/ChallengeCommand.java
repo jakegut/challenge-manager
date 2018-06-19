@@ -47,8 +47,20 @@ public class ChallengeCommand implements CommandExecutor {
                 if(player.hasPermission("challenges.admin")){
                     player.sendMessage(ChatColor.GREEN + "/challenge create <title> " + ChatColor.RESET +
                             "Create a new set of challenges with a title.");
+                    player.sendMessage(ChatColor.GREEN + "/challenge edit <title> " + ChatColor.RESET +
+                            "Edit a specific challenge set.");
+                    player.sendMessage(ChatColor.GREEN + "/challenge create <title> " + ChatColor.RESET +
+                            "Create a new set of challenges with a title.");
+                    player.sendMessage(ChatColor.GREEN + "/challenge add <description> " + ChatColor.RESET +
+                            "Add challenge to Challenge set. Must be editing!");
+                    player.sendMessage(ChatColor.GREEN + "/challenge set <ChallengeSet> player <player(s)> " + ChatColor.RESET +
+                            "Assign player(s) to a challenge set");
+                    player.sendMessage(ChatColor.GREEN + "/challenge complete <player(s)> " + ChatColor.RESET +
+                            "Set their current challenge to completed.");
                 }
-                player.sendMessage(ChatColor.GREEN + "/challenge list " + ChatColor.RESET +
+                player.sendMessage(ChatColor.GREEN + "/challenge completed " + ChatColor.RESET +
+                        "Let the admin know you have completed the challenge. You can also use the challenge set book :)");
+                player.sendMessage(ChatColor.GREEN + "/challenge list [ChallengeSet] " + ChatColor.RESET +
                         "List all of the sets of challenges.");
                 return true;
             }
