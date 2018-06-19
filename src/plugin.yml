@@ -2,7 +2,7 @@ author: Borgdude
 description: "Another first plugin"
 main: com.borgdude.challenge.Main
 name: Challenge_Manager
-version: "0.1.0"
+version: "0.1.1"
 
 commands:
   freeze:
