@@ -127,7 +127,7 @@ public class ChallengeBookManager {
     private void updateBook(){
         ItemStack newBook = makeBook();
         for(Player player: Bukkit.getServer().getOnlinePlayers()){
-            if(player.hasPermission("challenges.admin"))
+            if(player.hasPermission("challenges.admin")){
                 for(ItemStack is : player.getInventory()){
                     if (is != null) {
                         BookMeta bmbm;
@@ -141,7 +141,8 @@ public class ChallengeBookManager {
                     }
                 }
                 player.getInventory().addItem(newBook);
-            player.updateInventory();
+                player.updateInventory();
+            }
         }
 
         book = newBook;
