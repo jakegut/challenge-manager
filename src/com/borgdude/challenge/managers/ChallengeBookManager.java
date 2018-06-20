@@ -1,9 +1,12 @@
 package com.borgdude.challenge.managers;
 
+import com.borgdude.challenge.Main;
 import com.borgdude.challenge.objects.Challenge;
 import com.borgdude.challenge.objects.ChallengeSet;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
 import net.minecraft.server.v1_12_R1.IChatBaseComponent;
@@ -61,8 +64,11 @@ public class ChallengeBookManager {
 
     private ArrayList<Player> challengeQueue;
 
+    private ChallengeManager challengeManager = Main.challengeManager;
+
     public ChallengeBookManager() {
         challengeQueue = new ArrayList<>();
+
         book = new ItemStack(Material.WRITTEN_BOOK);
         bm = (BookMeta) book.getItemMeta();
 
@@ -88,7 +94,7 @@ public class ChallengeBookManager {
         BookMeta bm = (BookMeta) newBook.getItemMeta();
         List<IChatBaseComponent> pages;
         bm.setTitle("Challenge Book");
-        bm.setAuthor("Borgdude");
+        bm.setAuthor("FUNGAdmins");
 
         try{
             pages = (List<IChatBaseComponent>) CraftMetaBook.class.getDeclaredField("pages").get(bm);
@@ -98,20 +104,48 @@ public class ChallengeBookManager {
         }
 
         TextComponent text = new TextComponent();
+
+        TextComponent sep = new TextComponent(" | ");
+        sep.setUnderlined(false);
+        sep.setColor(ChatColor.RESET);
+
         for(Player player : challengeQueue){
             TextComponent p = new TextComponent(player.getName());
             p.setColor(ChatColor.BLUE);
+            p.setHoverEvent( new HoverEvent( HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(
+                challengeManager.getCurrentChallenge(player).getDescription()
+            ).create() ) );
+
             TextComponent tp = new TextComponent("TP");
             tp.setUnderlined(true);
+            tp.setColor(ChatColor.DARK_AQUA);
             tp.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tp " + player.getName()));
-            TextComponent complete = new TextComponent("COMP");
+            tp.setHoverEvent( new HoverEvent( HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(
+                    "TP to " + player.getName()
+            ).create() ) );
+
+            TextComponent complete = new TextComponent("V");
             complete.setUnderlined(true);
+            complete.setColor(ChatColor.DARK_GREEN);
             complete.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/challenge complete " + player.getName()));
+            complete.setHoverEvent( new HoverEvent( HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(
+                    "Set " + player.getName() + "'s challenge completed"
+            ).create() ) );
+
+            TextComponent deny = new TextComponent("X");
+            deny.setColor(ChatColor.DARK_RED);
+            deny.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/challenge deny " + player.getName()));
+            deny.setHoverEvent( new HoverEvent( HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(
+                    "Deny " + player.getName() + "'s challenge"
+            ).create() ) );
+
             text.addExtra(p);
             text.addExtra(": ");
             text.addExtra(tp);
-            text.addExtra(" | ");
+            text.addExtra(sep);
             text.addExtra(complete);
+            text.addExtra(sep);
+            text.addExtra(deny);
             text.addExtra(nl);
             Bukkit.getConsoleSender().sendMessage("Added a player to the book");
         }

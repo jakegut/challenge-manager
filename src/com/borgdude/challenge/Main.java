@@ -28,11 +28,12 @@ public class Main extends JavaPlugin {
     @Override
     public void onEnable(){
         plugin = this;
-        freezeManager = new FreezeManager();
-        challengeBookManager = new ChallengeBookManager();
         getConfig().options().copyDefaults(true);
         saveConfig();
         loadChallengeSets();
+        freezeManager = new FreezeManager();
+        challengeBookManager = new ChallengeBookManager();
+        challengeManager.setChallengeBookManager(challengeBookManager); // To avoid NullPointerException (it works)
         getCommand("freeze").setExecutor(new FreezeCommand());
         getCommand("unfreeze").setExecutor(new UnfreezeCommand());
         getCommand("challenge").setExecutor(new ChallengeCommand());

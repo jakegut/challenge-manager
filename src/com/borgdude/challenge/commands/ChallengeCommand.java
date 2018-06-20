@@ -57,6 +57,8 @@ public class ChallengeCommand implements CommandExecutor {
                             "Assign player(s) to a challenge set");
                     player.sendMessage(ChatColor.GREEN + "/challenge complete <player(s)> " + ChatColor.RESET +
                             "Set their current challenge to completed.");
+                    player.sendMessage(ChatColor.GREEN + "/challenge deny <player(s)> " + ChatColor.RESET +
+                            "Deny a challenge complete request.");
                 }
                 player.sendMessage(ChatColor.GREEN + "/challenge completed " + ChatColor.RESET +
                         "Let the admin know you have completed the challenge. You can also use the challenge set book :)");
@@ -327,6 +329,36 @@ public class ChallengeCommand implements CommandExecutor {
 
                             this.challengeManager.removePlayer(challenger);
                         }
+                    }
+
+                    return true;
+                } else if (args[0].equalsIgnoreCase("deny")){
+                    if(args.length < 1){
+                        player.sendMessage(ChatColor.RED + "Usage: /challenge deny <player(s)>");
+                        return true;
+                    }
+
+                    for(int i = 1; i < args.length; i++){
+                        Player challenger = Bukkit.getPlayer(args[i]);
+
+                        if(challenger == null){
+                            player.sendMessage(ChatColor.RED + "Player " + ChatColor.GOLD + args[i] +
+                                    ChatColor.RED + " not found");
+                            continue;
+                        }
+
+                        int status = this.challengeManager.deniedChallenge(challenger);
+
+                        if(status == 1){
+                            player.sendMessage(ChatColor.DARK_GREEN + challenger.getName() + ChatColor.GREEN +
+                                    "'s challenge has been denied");
+                            challenger.sendMessage(ChatColor.RED +
+                                    "Your challenge has been denied. Talk to the admin and try again");
+                        } else if (status == 2){
+                            player.sendMessage(ChatColor.YELLOW + challenger.getName() + ChatColor.RED
+                                    + " was never there in the first place");
+                        }
+
                     }
 
                     return true;

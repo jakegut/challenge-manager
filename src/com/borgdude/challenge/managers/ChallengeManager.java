@@ -1,5 +1,6 @@
 package com.borgdude.challenge.managers;
 
+import com.borgdude.challenge.Main;
 import com.borgdude.challenge.events.ChallengeCompletedEvent;
 import com.borgdude.challenge.events.ChallengeSetCompletedEvent;
 import com.borgdude.challenge.objects.Challenge;
@@ -14,6 +15,12 @@ import java.util.List;
 import java.util.UUID;
 
 public class ChallengeManager {
+
+    public void setChallengeBookManager(ChallengeBookManager challengeBookManager) {
+        this.challengeBookManager = challengeBookManager;
+    }
+
+    private ChallengeBookManager challengeBookManager;
 
     public ChallengeManager(ArrayList<ChallengeSet> challengeSet){
         this.challengeSet = challengeSet;
@@ -80,6 +87,15 @@ public class ChallengeManager {
         }
     }
 
+    public int deniedChallenge(Player player){
+        if(this.challengeBookManager.getChallengeQueue().contains(player)){
+            this.challengeBookManager.removePlayer(player);
+            return 1;
+        } else {
+            return 2;
+        }
+    }
+
     public Challenge getCurrentChallenge(Player player){
         if(this.completedChallenges.containsKey(player)){
             Challenge ch = this.getCompletedChallenges().get(player);
@@ -88,10 +104,15 @@ public class ChallengeManager {
             int num = cs.getChallengeIndex(ch);
             return cs.getChallenges().get(num);
         }
-        else if(this.assignedChallengeSets.containsKey(player))
+        else if(this.assignedChallengeSets.containsKey(player)){
+            Bukkit.getConsoleSender().sendMessage("Player is on first challenge....");
             return this.assignedChallengeSets.get(player).getChallenges().get(0);
-        else
+        }
+        else{
+            Bukkit.getConsoleSender().sendMessage("RETURNED NULL");
             return null;
+        }
+
     }
 
     public HashMap<Player, Challenge> getCompletedChallenges() {
