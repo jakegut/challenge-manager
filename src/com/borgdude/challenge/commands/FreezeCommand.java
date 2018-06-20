@@ -3,7 +3,6 @@ package com.borgdude.challenge.commands;
 import com.borgdude.challenge.Main;
 import com.borgdude.challenge.managers.FreezeManager;
 import net.md_5.bungee.api.ChatColor;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.Command;
@@ -32,13 +31,11 @@ public class FreezeCommand implements CommandExecutor {
                         for(Player p: plugin.getServer().getOnlinePlayers()) {
                             freezeManager.addPlayer(p.getName());
                             player.sendMessage(ChatColor.GREEN + "Froze: " + ChatColor.BLUE + p.getName());
-                            p.sendMessage(ChatColor.BLUE + "You're now frozen.");
                         }
                     } else {
                         for(int i = 0; i < args.length; i++){
                             freezeManager.addPlayer(args[i]);
                             player.sendMessage(ChatColor.GREEN + "Froze: " + ChatColor.BLUE + args[i]);
-                            Bukkit.getPlayer(args[i]).sendMessage(ChatColor.BLUE + "You're now frozen.");
                         }
                     }
                 }

@@ -31,13 +31,11 @@ public class UnfreezeCommand implements CommandExecutor {
                         for(Player p: plugin.getServer().getOnlinePlayers()) {
                             freezeManager.removePlayer(p.getName());
                             player.sendMessage(ChatColor.GREEN + "Unfroze: " + ChatColor.BLUE + p.getName());
-                            p.sendMessage(ChatColor.BLUE + "You're now unfrozen.");
                         }
                     } else {
                         for(int i = 0; i < args.length; i++){
                             freezeManager.removePlayer(args[i]);
                             player.sendMessage(ChatColor.GREEN + "Unfroze: " + ChatColor.BLUE + args[i]);
-                            Bukkit.getPlayer(args[i]).sendMessage(ChatColor.BLUE + "You're now unfrozen.");
                         }
                     }
                 }
